@@ -84,6 +84,8 @@ h1{font-size:18px;margin-bottom:10px}
 <input type="text" id="fAddr" placeholder="주소/단지명 검색...">
 <label style="font-size:13px">면적: <input type="number" id="fAreaMin" style="width:60px" placeholder="최소">~<input type="number" id="fAreaMax" style="width:60px" placeholder="최대">㎡</label>
 <button class="btn-export" onclick="exportCSV()">CSV 내보내기</button>
+<button class="btn-export" onclick="exportFavs()" style="background:#e91e63">즐겨찾기 저장</button>
+<label class="btn-export" style="background:#8e24aa;margin:0;cursor:pointer">즐겨찾기 불러오기<input type="file" accept=".json" onchange="importFavs(event)" style="display:none"></label>
 </div>
 <div class="count" id="count"></div>
 <div class="table-wrap">
@@ -547,6 +549,33 @@ function exportCSV() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = '매입임대주택_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
+}
+
+function exportFavs() {
+  const ids = Object.keys(favs).filter(k => favs[k]).map(Number);
+  if (!ids.length) { alert('즐겨찾기가 없습니다.'); return; }
+  const blob = new Blob([JSON.stringify(ids)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = '즐겨찾기_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+}
+
+function importFavs(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function() {
+    try {
+      const ids = JSON.parse(reader.result);
+      if (!Array.isArray(ids)) throw 0;
+      ids.forEach(id => { favs[id] = true; });
+      localStorage.setItem('favs', JSON.stringify(favs));
+      render();
+      alert(ids.length + '개 즐겨찾기를 불러왔습니다.');
+    } catch(err) { alert('잘못된 파일입니다.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 populateFilters();
