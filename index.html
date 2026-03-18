@@ -37,6 +37,13 @@ tr:hover{background:#f0f7ff}
 .tag-y{background:#e8f5e9;color:#2e7d32}
 .tag-n{background:#fafafa;color:#999}
 .tag-low{background:#fff3e0;color:#e65100;font-weight:600}
+.side-panel{position:fixed;top:0;right:0;width:45%;height:100%;background:#fff;box-shadow:-2px 0 12px rgba(0,0,0,.2);z-index:100;transform:translateX(100%);transition:transform .25s ease}
+.side-panel.open{transform:translateX(0)}
+.side-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#2c3e50;color:#fff;font-size:14px}
+.side-panel-header button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px}
+.side-panel-header a{color:#fff;font-size:12px;text-decoration:underline;margin-right:8px}
+.side-panel iframe{width:100%;height:calc(100% - 44px);border:none}
+@media(max-width:768px){.side-panel{width:100%}}
 </style>
 </head>
 <body>
@@ -59,6 +66,14 @@ tr:hover{background:#f0f7ff}
 </tr></thead>
 <tbody id="tbody"></tbody>
 </table>
+</div>
+
+<div class="side-panel" id="sidePanel">
+<div class="side-panel-header">
+<span id="panelTitle">지도</span>
+<div><a id="panelExtLink" href="#" target="_blank">새 탭에서 열기</a><button onclick="closePanel()">&times;</button></div>
+</div>
+<iframe id="panelFrame"></iframe>
 </div>
 
 <script>
@@ -341,6 +356,19 @@ function naverMapURL(addr) {
   return 'https://map.naver.com/v5/search/' + encodeURIComponent('서울특별시 ' + addr);
 }
 
+function openPanel(addr) {
+  const url = naverMapURL(addr);
+  document.getElementById('panelTitle').textContent = addr;
+  document.getElementById('panelExtLink').href = url;
+  document.getElementById('panelFrame').src = url;
+  document.getElementById('sidePanel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('panelFrame').src = '';
+}
+
 function toggleFav(id) {
   if (favs[id]) delete favs[id]; else favs[id] = true;
   localStorage.setItem('favs', JSON.stringify(favs));
@@ -402,7 +430,7 @@ function render() {
     tr.innerHTML = `
       <td><input type="checkbox" class="fav-cb" ${favs[d.id]?'checked':''} onchange="toggleFav(${d.id})"></td>
       <td>${d.id}</td><td>${d.gu}</td><td>${d.danji}</td>
-      <td class="addr" onclick="window.open('${naverMapURL(d.addr)}','_blank')" title="네이버지도에서 검색">${d.addr}</td>
+      <td class="addr" onclick="openPanel('${d.addr.replace(/'/g,"\\'")}')" title="네이버지도에서 검색">${d.addr}</td>
       <td>${d.ho}</td>
       <td>${d.low_floor==='○'?'<span class="tag tag-low">저층</span>':'<span class="tag tag-n">-</span>'}</td>
       <td>${d.area}㎡</td><td>${d.rooms}</td>
