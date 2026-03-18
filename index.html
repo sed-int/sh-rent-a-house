@@ -43,7 +43,33 @@ tr:hover{background:#f0f7ff}
 .side-panel-header button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px}
 .side-panel-header a{color:#fff;font-size:12px;text-decoration:underline;margin-right:8px}
 .side-panel iframe{width:100%;height:calc(100% - 44px);border:none}
-@media(max-width:768px){.side-panel{width:100%}}
+@media(max-width:768px){
+.side-panel{width:100%}
+body{padding:10px}
+h1{font-size:18px;margin-bottom:10px}
+.filters{gap:6px}
+.filters select,.filters input,.multi-sel-btn{font-size:14px;padding:8px 10px;width:100%}
+.filters select{min-width:0}
+.multi-sel{width:100%}
+.multi-sel-btn{max-width:none}
+.filters input[type=text]{width:100%}
+.filters label{width:100%;font-size:14px}
+.filters label input[type=number]{width:70px}
+.btn-export{width:100%;padding:10px}
+.table-wrap{display:none}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.card.low-floor{background:#fff3e0}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.card-top .fav-cb{width:22px;height:22px}
+.card-id{font-size:12px;color:#999}
+.card-addr{color:#1a73e8;font-size:15px;font-weight:600;text-decoration:underline;cursor:pointer;line-height:1.4;margin-bottom:8px;display:block}
+.card-info{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:#555}
+.card-info span{white-space:nowrap}
+.card-price{display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-size:13px}
+.card-price strong{color:#333}
+}
+@media(min-width:769px){.cards{display:none}}
 </style>
 </head>
 <body>
@@ -67,6 +93,7 @@ tr:hover{background:#f0f7ff}
 <tbody id="tbody"></tbody>
 </table>
 </div>
+<div class="cards" id="cards"></div>
 
 <div class="side-panel" id="sidePanel">
 <div class="side-panel-header">
@@ -454,9 +481,10 @@ function getFiltered() {
 function render() {
   saveFilters();
   const data = getFiltered();
+  document.getElementById('count').textContent = `총 ${data.length}건`;
+  // Desktop table
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-  document.getElementById('count').textContent = `총 ${data.length}건`;
   data.forEach(d => {
     const tr = document.createElement('tr');
     if (d.low_floor === '○') tr.className = 'low-floor';
@@ -473,6 +501,35 @@ function render() {
       <td>${d.parking}</td>
       <td>${pr?fmtW(pr[0]):'-'}</td><td>${pr?fmtW(pr[1]):'-'}</td>`;
     tbody.appendChild(tr);
+  });
+  // Mobile cards
+  const cards = document.getElementById('cards');
+  cards.innerHTML = '';
+  data.forEach(d => {
+    const pr = PRICE[d.id];
+    const div = document.createElement('div');
+    div.className = 'card' + (d.low_floor === '○' ? ' low-floor' : '');
+    div.innerHTML = `
+      <div class="card-top">
+        <span class="card-id">#${d.id} ${d.gu} ${d.danji} ${d.ho}</span>
+        <input type="checkbox" class="fav-cb" ${favs[d.id]?'checked':''} onchange="toggleFav(${d.id})">
+      </div>
+      <span class="card-addr" onclick="openPanel('${d.addr.replace(/'/g,"\\'")}')">
+        ${d.addr}
+      </span>
+      <div class="card-info">
+        <span>${d.area}㎡</span>
+        <span>방 ${d.rooms}</span>
+        <span>승강기 ${d.elevator}</span>
+        ${d.low_floor==='○'?'<span class="tag tag-low">저층</span>':''}
+        ${d.mech_parking==='○'?'<span>기계식주차</span>':''}
+        <span>주차 ${d.parking}대</span>
+      </div>
+      ${pr?`<div class="card-price">
+        <span>보증금 <strong>${fmtW(pr[0])}</strong></span>
+        <span>월세 <strong>${fmtW(pr[1])}</strong></span>
+      </div>`:''}`;
+    cards.appendChild(div);
   });
 }
 
