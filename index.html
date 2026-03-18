@@ -73,7 +73,7 @@ h1{font-size:18px;margin-bottom:10px}
 </style>
 </head>
 <body>
-<div style="position:fixed;top:6px;right:10px;font-size:11px;color:#aaa;z-index:50">v0.1.0</div>
+<div style="position:fixed;top:6px;right:10px;font-size:11px;color:#aaa;z-index:50">v0.2.0</div>
 <h1>🏠 서울시 매입임대주택 조회</h1>
 <div class="filters">
 <div class="multi-sel" id="fGuWrap"><button type="button" class="multi-sel-btn" id="fGuBtn">전체 자치구</button><div class="multi-sel-drop" id="fGuDrop"></div></div>
@@ -386,6 +386,7 @@ function naverMapURL(addr) {
 
 function openPanel(addr) {
   const url = naverMapURL(addr);
+  if (window.innerWidth <= 768) { window.open(url, '_blank'); return; }
   document.getElementById('panelTitle').textContent = addr;
   document.getElementById('panelExtLink').href = url;
   document.getElementById('panelFrame').src = url;
