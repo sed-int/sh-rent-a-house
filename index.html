@@ -397,6 +397,39 @@ function updateGuBtn() {
   document.getElementById('fGuBtn').textContent = sel.length === 0 ? '전체 자치구' : sel.length <= 3 ? sel.join(', ') : sel.length + '개 자치구';
 }
 
+function saveFilters() {
+  try {
+    localStorage.setItem('filters', JSON.stringify({
+      gus: getSelectedGus(),
+      room: document.getElementById('fRoom').value,
+      elev: document.getElementById('fElev').value,
+      low: document.getElementById('fLow').value,
+      fav: document.getElementById('fFav').value,
+      addr: document.getElementById('fAddr').value,
+      aMin: document.getElementById('fAreaMin').value,
+      aMax: document.getElementById('fAreaMax').value
+    }));
+  } catch(e) {}
+}
+
+function loadFilters() {
+  try {
+    const f = JSON.parse(localStorage.getItem('filters'));
+    if (!f) return;
+    if (f.gus && f.gus.length) {
+      document.querySelectorAll('#fGuDrop input').forEach(cb => { cb.checked = f.gus.includes(cb.value); });
+      updateGuBtn();
+    }
+    if (f.room) document.getElementById('fRoom').value = f.room;
+    if (f.elev) document.getElementById('fElev').value = f.elev;
+    if (f.low) document.getElementById('fLow').value = f.low;
+    if (f.fav) document.getElementById('fFav').value = f.fav;
+    if (f.addr) document.getElementById('fAddr').value = f.addr;
+    if (f.aMin) document.getElementById('fAreaMin').value = f.aMin;
+    if (f.aMax) document.getElementById('fAreaMax').value = f.aMax;
+  } catch(e) {}
+}
+
 function getFiltered() {
   const gus = getSelectedGus();
   const room = document.getElementById('fRoom').value;
@@ -419,6 +452,7 @@ function getFiltered() {
 }
 
 function render() {
+  saveFilters();
   const data = getFiltered();
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
@@ -457,6 +491,7 @@ function exportCSV() {
 }
 
 populateFilters();
+loadFilters();
 render();
 
 ['fRoom','fElev','fLow','fFav'].forEach(id => document.getElementById(id).addEventListener('change', render));
